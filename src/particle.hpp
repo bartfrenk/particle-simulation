@@ -33,7 +33,7 @@ public:
 
     void print(std::ostream &os) const;
 
-private:
+public:
     const double mass;
     const double radius;
     unsigned int collisionCount;

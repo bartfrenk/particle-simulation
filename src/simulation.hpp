@@ -5,6 +5,7 @@
 
 #include "space.hpp"
 #include "particle.hpp"
+#include "canvas.hpp"
 
 template <int d, class T>
 class Simulation {
@@ -16,6 +17,11 @@ public:
         }
     }
     void step(const T dt) {};
+
+    void set_canvas(const Canvas canvas) {
+        canvas.init(space, particles);
+    }
+
 private:
     Particle<d, T>* createRandomParticle(const double mass, const double radius);
     const Space<d, T> space;

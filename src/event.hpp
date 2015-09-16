@@ -27,7 +27,7 @@ public:
 
 bool Event::operator<(const Event &other) const {
     return t < other.t;
-};
+}
 
 template <int d, class T>
 WallCollision<d, T>::WallCollision(const int i, Particle<d, T> *p) : particle(p) {
