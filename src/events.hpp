@@ -64,7 +64,7 @@ bool ParticleCollision<d, T>::resolve() {
     } else {
         return false;
     }
-};
+}
 
 template <const dim_t d, typename T>
 bool WallCollision<d, T>::resolve() {
