@@ -11,13 +11,14 @@
 
 template <const dim_t d, typename T>
 class Observer {
-    virtual bool update(const unsigned int count, const Particle<d, T>** ps) = 0;
+public:
+    virtual bool update(const size_t count, Particle<d, T>** ps) = 0;
 };
 
 template <const dim_t d, typename T>
 class Simulation {
 public:
-    Simulation(const unsigned int count, Generator<Particle<d, T>*> &fn);
+    Simulation(const size_t count, Generator<Particle<d, T>*> &fn);
     ~Simulation();
 
     void step(const tick_t dt);
@@ -26,7 +27,7 @@ public:
 private:
 
     Particle<d, T> **ps;
-    const unsigned int n;
+    const size_t n;
 
     std::list<Observer<d, T>*> observers;
 
@@ -34,12 +35,12 @@ private:
 };
 
 template <const dim_t d, typename T>
-Simulation<d, T>::Simulation(const unsigned int count,
+Simulation<d, T>::Simulation(const size_t count,
                              Generator<Particle<d, T>*> &fn) : n(count)
 {
     time = 0;
     ps = new Particle<d, T>*[n];
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         if (!fn.empty()) ps[i] = fn.get();
         else throw std::invalid_argument("Cannot generate enough particles");
     }
@@ -47,7 +48,7 @@ Simulation<d, T>::Simulation(const unsigned int count,
 
 template <const dim_t d, typename T>
 Simulation<d, T>::~Simulation() {
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         delete ps[i];
     }
     delete[] ps;
@@ -56,7 +57,7 @@ Simulation<d, T>::~Simulation() {
 template <const dim_t d, typename T>
 void Simulation<d, T>::step(const tick_t dt) {
     time += dt;
-    for (unsigned int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         ps[i]->move(dt);
     }
 }
@@ -64,6 +65,7 @@ void Simulation<d, T>::step(const tick_t dt) {
 template <const dim_t d, typename T>
 void Simulation<d, T>::subscribe(Observer<d, T> &observer) {
     observers.push_back(&observer);
+    observer.update(n, ps);
 }
 
 #endif
