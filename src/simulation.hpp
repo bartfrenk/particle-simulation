@@ -12,6 +12,7 @@
 template <const dim_t d, typename T>
 class Observer {
 public:
+    // TODO: specify in signature that observers cannot change ps
     virtual bool update(const size_t count, Particle<d, T>** ps) = 0;
 };
 
@@ -23,13 +24,15 @@ public:
 
     void step(const tick_t dt);
     void subscribe(Observer<d, T> &observer);
+    bool notify() const;
 
 private:
 
     Particle<d, T> **ps;
     const size_t n;
 
-    std::list<Observer<d, T>*> observers;
+    typedef std::list<Observer<d, T>*> ObserverList;
+    ObserverList observers;
 
     tick_t time;
 };
@@ -66,6 +69,15 @@ template <const dim_t d, typename T>
 void Simulation<d, T>::subscribe(Observer<d, T> &observer) {
     observers.push_back(&observer);
     observer.update(n, ps);
+}
+
+template <const dim_t d, typename T>
+bool Simulation<d, T>::notify() const {
+    bool result = false;
+    for (typename ObserverList::const_iterator it = observers.begin(); it != observers.end(); ++it) {
+        result |= (*it)->update(n, ps);
+    }
+    return result;
 }
 
 #endif
