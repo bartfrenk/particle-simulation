@@ -5,16 +5,12 @@
 #include "events.hpp"
 #include "generator.hpp"
 #include "simulation.hpp"
+#include "observer.hpp"
 
 using std::cout;
 using std::endl;
 
 const char * const indent = "\t";
-
-template <const dim_t d, typename T>
-Particle<d, T>* create_random_particle() {
-
-}
 
 void test_events() {
     Getter<int> fn = Getter<int>(std::rand);
@@ -39,12 +35,14 @@ void test_simulation() {
     Getter<int> vectors(std::rand);
     RandomParticleGenerator<3, int> fn(1.0, 1.0, vectors);
     Simulation<3, int> s(3, fn);
+    ConsoleWriter<3, int> observer;
+    s.subscribe(observer);
     s.step(1);
 }
 
 int main() {
     srand(time(NULL));
-    test_events();
+    test_simulation();
 
     return 0;
 
