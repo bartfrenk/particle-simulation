@@ -1,16 +1,19 @@
 CFLAGS = $(shell pkg-config gtkmm-3.0 --cflags)
 LIBS = $(shell pkg-config gtkmm-3.0 --libs)
-OBJECTS = canvas.o client.o
+OBJECTS = client.o
 OPTIONS =-Wall -pedantic
 
 .PHONY: all clean
-all: client
+all: client, test
 
 %.o: %.cpp
-	g++ -c $< $(OPTIONS) $(CFLAGS)
+	g++ -c $< $(OPTIONS)
 
 client: $(OBJECTS)
 	g++ -o $@.out $^ $(OPTIONS) $(LIBS)
+
+test: test.o
+	g++ -o $@.out $^ $(OPTIONS)
 
 clean:
 	rm -f *.o *.out
