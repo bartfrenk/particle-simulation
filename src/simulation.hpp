@@ -2,40 +2,68 @@
 #define SIMULATION_HPP
 
 #include <cstdlib>
+#include <stdexcept>
+#include <list>
 
 #include "space.hpp"
 #include "particle.hpp"
-#include "canvas.hpp"
+#include "generator.hpp"
 
-template <int d, class T>
-class Simulation {
-public:
-    Simulation(const Space<d, T> space, const unsigned int n, double *mass, double *radius) : space(space) {
-        particles = new Particle<d, T>[n];
-        for (int i = 0; i < d; ++i) {
-            particles[i] = createRandomParticle(mass[i], radius[i]);
-        }
-    }
-    void step(const T dt) {};
-
-    void set_canvas(const Canvas canvas) {
-        canvas.init(space, particles);
-    }
-
-private:
-    Particle<d, T>* createRandomParticle(const double mass, const double radius);
-    const Space<d, T> space;
-    Particle<d, T> ** const particles;
-    T now;
+template <const dim_t d, typename T>
+class Observer {
+    virtual bool update(const unsigned int count, const Particle<d, T>** ps) = 0;
 };
 
-template <int d, class T>
-Particle<d, T>* Simulation<d, T>::createRandomParticle(const double mass, const double radius) {
-    Particle<d, T> *p = new Particle<d, T>(mass, radius);
-    for (int i = 0; i < d; ++i) {
-        p->setPosition(i, std::rand());
-        p->setSpeed(i, std::rand());
+template <const dim_t d, typename T>
+class Simulation {
+public:
+    Simulation(const unsigned int count, Generator<Particle<d, T>*> &fn);
+    ~Simulation();
+
+    void step(const tick_t dt);
+    void subscribe(Observer<d, T> &observer);
+
+private:
+
+    Particle<d, T> **ps;
+    const unsigned int n;
+
+    std::list<Observer<d, T>*> observers;
+
+    tick_t time;
+};
+
+template <const dim_t d, typename T>
+Simulation<d, T>::Simulation(const unsigned int count,
+                             Generator<Particle<d, T>*> &fn) : n(count)
+{
+    time = 0;
+    ps = new Particle<d, T>*[n];
+    for (int i = 0; i < n; ++i) {
+        if (!fn.empty()) ps[i] = fn.get();
+        else throw std::invalid_argument("Cannot generate enough particles");
     }
+}
+
+template <const dim_t d, typename T>
+Simulation<d, T>::~Simulation() {
+    for (int i = 0; i < n; ++i) {
+        delete ps[i];
+    }
+    delete[] ps;
+}
+
+template <const dim_t d, typename T>
+void Simulation<d, T>::step(const tick_t dt) {
+    time += dt;
+    for (unsigned int i = 0; i < n; ++i) {
+        ps[i]->move(dt);
+    }
+}
+
+template <const dim_t d, typename T>
+void Simulation<d, T>::subscribe(Observer<d, T> &observer) {
+    observers.push_back(&observer);
 }
 
 #endif

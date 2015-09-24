@@ -7,8 +7,9 @@
 
 class Canvas : public Gtk::DrawingArea {
 public:
-    Canvas() {};
-    void init(Space<2, double> *space, Particle<2, double> **particles, const int n) {
+
+    Canvas();
+    void init(Space<2, double> *space, Particle<2, double> *particles, const int n) {
         m_space = space;
         m_particles = particles;
         m_count = n;
@@ -16,13 +17,14 @@ public:
     virtual ~Canvas() {};
 
 protected:
+
     virtual bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr);
 
 private:
     // space this canvas represents
     Space<2, double> *m_space;
     // particles that exist in the space
-    Particle<2, double> **m_particles;
+    Particle<2, double> *m_particles;
     // number of particles
     int m_count;
 

@@ -1,5 +1,8 @@
 #include "canvas.hpp"
 
+Canvas::Canvas() : m_count(0) {
+}
+
 bool Canvas::on_draw(const Cairo::RefPtr<Cairo::Context>& cr) {
     Gtk::Allocation allocation = get_allocation();
     const int width = allocation.get_width();
