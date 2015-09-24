@@ -35,9 +35,10 @@ void test_simulation() {
     Getter<int> vectors(std::rand);
     RandomParticleGenerator<3, int> fn(1.0, 1.0, vectors);
     Simulation<3, int> s(3, fn);
-    ConsoleWriter<3, int> observer;
+    StreamWriter<3, int> observer(cout);
     s.subscribe(observer);
     s.step(1);
+    s.notify();
 }
 
 int main() {
