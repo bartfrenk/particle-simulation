@@ -37,7 +37,7 @@ void test_simulation() {
     Simulation<3, int> s(3, fn);
     StreamWriter<3, int> observer(cout);
     s.subscribe(observer);
-    s.step(1);
+    s.next();
     s.notify();
 }
 
