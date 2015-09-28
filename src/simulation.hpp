@@ -102,14 +102,14 @@ void Simulation<d, T>::step(const tick_t dt) {
 template <const dim_t d, typename T>
 void Simulation<d, T>::subscribe(Observer<d, T> &observer) {
     observers.push_back(&observer);
-    observer.update(n, ps);
+    observer.update(now, ps, n);
 }
 
 template <const dim_t d, typename T>
 bool Simulation<d, T>::notify() const {
     bool result = false;
     for (typename ObserverList::const_iterator it = observers.begin(); it != observers.end(); ++it) {
-        result |= (*it)->update(n, ps);
+        result |= (*it)->update(now, ps, n);
     }
     return result;
 }

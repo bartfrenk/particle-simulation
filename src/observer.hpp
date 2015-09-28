@@ -13,24 +13,24 @@ template <const dim_t d, typename T>
 class Observer {
 public:
     // TODO: specify in signature that observers cannot change ps
-    virtual bool update(const size_t count, Particle<d, T>** ps) = 0;
+    virtual bool update(const tick_t time, Particle<d, T>** ps, const size_t count) = 0;
 };
 
 template <const dim_t d, typename T>
 class StreamWriter : public Observer<d, T> {
 public:
     StreamWriter(ostream& output) : os(output) {};
-    virtual bool update(const size_t count, Particle<d, T>** ps);
+    virtual bool update(const tick_t time, Particle<d, T>** ps, const size_t count);
 private:
     ostream &os;
 };
 
 template <const dim_t d, typename T>
-bool StreamWriter<d, T>::update(const size_t count, Particle<d, T>** ps) {
+bool StreamWriter<d, T>::update(const tick_t time, Particle<d, T>** ps, const size_t count) {
+    os << "Time: " << time << endl;
     for (size_t i = 0; i < count; ++i) {
-        os << *ps[i] << endl;
+        os << "\t" << i << ": " << *ps[i] << endl;
     }
-    os << endl;
     return true;
 }
 #endif
