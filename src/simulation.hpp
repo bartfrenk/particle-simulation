@@ -6,23 +6,25 @@
 #include <list>
 #include <queue>
 #include <vector>
+#include <cassert>
 
 #include "space.hpp"
 #include "particle.hpp"
 #include "generator.hpp"
-#include "events.hpp"
+#include "event.hpp"
+#include "observer.hpp"
 
-template <const dim_t d, typename T>
-class Observer {
+class InverseChronological {
 public:
-    // TODO: specify in signature that observers cannot change ps
-    virtual bool update(const size_t count, Particle<d, T>** ps) = 0;
+    bool operator() (Event *first, Event *second) {
+        return first->time > second->time;
+    }
 };
 
 template <const dim_t d, typename T>
 class Simulation {
 public:
-    Simulation(const size_t count, Generator<Particle<d, T>*> &fn, const tick_t step_size);
+    Simulation(const size_t count, Generator<Particle<d, T>*> &fn, const tick_t update_dt);
     ~Simulation();
 
     /// resolves the next event
@@ -35,35 +37,32 @@ private:
     Particle<d, T> **ps;
     const size_t n;
 
-    const tick_t dt_step;
+    const tick_t update_dt;
 
     typedef std::list<Observer<d, T>*> ObserverList;
     ObserverList observers;
 
-    std::priority_queue<Event<d, T>*, std::vector<Event<d, T>*>, EventCompare<d, T> > future;
+    std::priority_queue<Event*, std::vector<Event*>, InverseChronological> future;
 
-    tick_t time;
+    tick_t now;
 
     void step(const tick_t dt);
 
-    void resolveParticleCollision(const tick_t t, const size_t index_p, const size_t index_q);
-    void resolveWallCollision(const tick_t, const size_t index_p, const dim_t wall);
-    void resolveUpdatePosition(const tick_t);
+    void resolve(UpdatePosition * const event);
 };
 
 template <const dim_t d, typename T>
 Simulation<d, T>::Simulation(const size_t count, Generator<Particle<d, T>*> &fn,
-                             const tick_t step_size) : n(count), dt_step(step_size)
+                             const tick_t update_dt) : n(count), update_dt(update_dt)
 {
-    time = 0;
+    now = 0;
     ps = new Particle<d, T>*[n];
     for (size_t i = 0; i < n; ++i) {
         if (!fn.empty()) ps[i] = fn.get();
         else throw std::invalid_argument("Cannot generate enough particles");
     }
 
-    Event<d, T>::set_context(ps);
-    UpdatePosition<d, T>::set_callback(this->resolveUpdatePosition);
+    future.push(new UpdatePosition(update_dt));
 }
 
 template <const dim_t d, typename T>
@@ -78,15 +77,23 @@ template <const dim_t d, typename T>
 bool Simulation<d, T>::next() {
     if (future.empty()) return false;
 
-    Event<d, T>* current = future.top();
-    current->resolve();
+    Event* current = future.top();
+    switch (current->get_type()) {
+    case UPDATE_POSITION:
+        resolve(static_cast<UpdatePosition*> (current));
+        break;
+    case PARTICLE_COLLISION:
+        break;
+    case WALL_COLLISION:
+        break;
+    }
 
     return true;
 }
 
 template <const dim_t d, typename T>
 void Simulation<d, T>::step(const tick_t dt) {
-    time += dt;
+    now += dt;
     for (size_t i = 0; i < n; ++i) {
         ps[i]->move(dt);
     }
@@ -108,14 +115,15 @@ bool Simulation<d, T>::notify() const {
 }
 
 template <const dim_t d, typename T>
-void Simulation<d, T>::resolveUpdatePosition(const tick_t t) {
-    assert(t > time);
-    tick_t dt = time - t;
+void Simulation<d, T>::resolve(UpdatePosition * const event) {
+    assert (event->time > now);
+    tick_t dt = event->time - now;
     for (int i = 0; i < n; ++i) {
         ps[i]->move(dt);
     }
-    time = t;
-    future.push(new UpdatePosition<d, T>(time + dt_step));
+    now = event->time;
+    delete event;
+    future.push(new UpdatePosition(now + update_dt));
 }
 
 #endif
