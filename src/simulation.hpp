@@ -42,7 +42,7 @@ private:
     typedef std::list<Observer<d, T>*> ObserverList;
     ObserverList observers;
 
-    std::priority_queue<Event*, std::vector<Event*>, InverseChronological> future;
+    std::priority_queue<Event*, std::vector<Event*>, InverseChronological> pending;
 
     tick_t now;
 
@@ -62,7 +62,7 @@ Simulation<d, T>::Simulation(const size_t count, Generator<Particle<d, T>*> &fn,
         else throw std::invalid_argument("Cannot generate enough particles");
     }
 
-    future.push(new UpdatePosition(update_dt));
+    pending.push(new UpdatePosition(update_dt));
 }
 
 template <const dim_t d, typename T>
@@ -71,13 +71,14 @@ Simulation<d, T>::~Simulation() {
         delete ps[i];
     }
     delete[] ps;
+    // TODO: delete pending events
 }
 
 template <const dim_t d, typename T>
 bool Simulation<d, T>::next() {
-    if (future.empty()) return false;
+    if (pending.empty()) return false;
 
-    Event* current = future.top();
+    Event* current = pending.top();
     switch (current->get_type()) {
     case UPDATE_POSITION:
         resolve(static_cast<UpdatePosition*> (current));
@@ -123,7 +124,7 @@ void Simulation<d, T>::resolve(UpdatePosition * const event) {
     }
     now = event->time;
     delete event;
-    future.push(new UpdatePosition(now + update_dt));
+    pending.push(new UpdatePosition(now + update_dt));
 }
 
 #endif
