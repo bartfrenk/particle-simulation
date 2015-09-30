@@ -5,6 +5,7 @@
 #include "generator.hpp"
 #include "simulation.hpp"
 #include "observer.hpp"
+#include "box.hpp"
 
 using std::cout;
 using std::endl;
@@ -19,6 +20,10 @@ void test_simulation() {
     s.notify();
     s.next();
     s.notify();
+}
+
+void test_box() {
+    Box<3, int> box(1, 2, 1, 2, 1, 2);
 }
 
 int main() {
