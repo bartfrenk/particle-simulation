@@ -8,7 +8,6 @@
 #include <vector>
 #include <cassert>
 
-#include "space.hpp"
 #include "particle.hpp"
 #include "generator.hpp"
 #include "event.hpp"

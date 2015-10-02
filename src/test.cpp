@@ -12,7 +12,8 @@ using std::endl;
 
 void test_simulation() {
     Getter<int> vectors(std::rand);
-    RandomParticleGenerator<3, int> fn(1.0, 1.0, vectors);
+    ParticleGenerator<3, int> fn(1.0, 1.0, vectors);
+    fn.set_position_bounds(new Box<3, int>(3, 0, 10, 0, 10, 0, 10));
     Simulation<3, int> s(3, fn, 1);
     StreamWriter<3, int> observer(cout);
     s.subscribe(observer);
