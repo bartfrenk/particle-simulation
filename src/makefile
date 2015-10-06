@@ -12,7 +12,7 @@ all: client, test
 client: $(OBJECTS)
 	g++ -o $@.out $^ $(OPTIONS) $(LIBS)
 
-test: test.o
+test: test.o utils.o
 	g++ -o $@.out $^ $(OPTIONS)
 
 clean:
