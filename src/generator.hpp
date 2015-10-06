@@ -11,7 +11,7 @@ public:
 template <typename T>
 class Getter : public Generator<T> {
 public:
-    Getter(T (*getter)()) : fn(getter) {};
+    Getter(T (*getter)()) : fn(getter) {}
     virtual T get() { return fn(); }
     virtual bool empty() const { return false; }
 private:

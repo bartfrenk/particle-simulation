@@ -10,13 +10,31 @@
 using std::cout;
 using std::endl;
 
+typedef double coord_t;
+
+const double MAX = 10;
+const double MIN = 0;
+
+double rand_double() {
+    double x = (double) rand() / RAND_MAX;
+    cout << "x: " << x << "\n";
+    return MIN + x * (MAX - MIN);
+}
+
 void test_simulation() {
-    Getter<int> vectors(std::rand);
-    ParticleGenerator<3, int> fn(1.0, 1.0, vectors);
-    fn.set_position_bounds(new Box<3, int>(3, 0, 10, 0, 10, 0, 10));
-    Simulation<3, int> s(3, fn, 1);
-    StreamWriter<3, int> observer(cout);
+    Getter<coord_t> vectors(rand_double);
+    ParticleGenerator<3, coord_t> fn(1.0, 1.0, vectors);
+
+    coord_t pos_bounds[] = {0, 10, 0, 10, 0, 10};
+    fn.bound_position(new Box<3, coord_t>(pos_bounds));
+
+    coord_t vel_bounds[] = {-1, 1, -1, 1, -1, 1};
+    fn.bound_velocity(new Box<3, coord_t>(vel_bounds));
+
+    Simulation<3, coord_t> s(3, fn, 1);
+    StreamWriter<3, coord_t> observer(cout);
     s.subscribe(observer);
+
     s.next();
     s.notify();
     s.next();
@@ -24,7 +42,6 @@ void test_simulation() {
 }
 
 void test_box() {
-    Box<3, int> box(1, 2, 1, 2, 1, 2);
 }
 
 int main() {

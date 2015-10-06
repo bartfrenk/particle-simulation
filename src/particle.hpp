@@ -18,22 +18,23 @@ template <const dim_t d, typename T>
 class ParticleGenerator : public Generator<Particle<d, T>*> {
 public:
     ParticleGenerator(const double mass, const double radius, Generator<T> &generator)
-        : m(mass), r(radius), fn(generator), x_box(NULL), v_box(NULL) {};
+        : m(mass), r(radius), fn(generator), x_box(NULL), v_box(NULL) {}
 
     void set_mass(const double mass) { m = mass; }
     void set_radius(const double radius ) { r = radius; }
     void set_generator(Generator<T> &generator) { fn = generator; }
-    void set_position_bounds(const Box<d, T> *bounds) { x_box = bounds; }
-    void set_velocity_bounds(const Box<d, T> *bounds) { v_box = bounds; }
+
+    void bound_position(Box<d, T> *bounds) { x_box = bounds; }
+    void bound_velocity(Box<d, T> *bounds) { v_box = bounds; }
 
     virtual Particle<d, T>* get();
-    virtual bool empty() const { return fn.empty(); };
+    virtual bool empty() const { return fn.empty(); }
 private:
     double m;
     double r;
     Generator<T> &fn;
     const Box<d, T> * x_box;
-    Box<d, T> * const v_box;
+    const Box<d, T> * v_box;
 
     T* create_vector();
 };
@@ -43,7 +44,7 @@ class Particle {
 public:
 
     Particle(const double mass, const double radius, T *position, T *speed)
-        : m(mass), r(radius), x(position), v(speed), counter(0) {};
+        : m(mass), r(radius), x(position), v(speed), counter(0) {}
 
     ~Particle() { delete[] x; delete[] v; }
 
@@ -72,12 +73,12 @@ Particle<d, T>* ParticleGenerator<d, T>::get() {
     T* x = create_vector();
     T* v = create_vector();
     if (x_box != NULL) {
-        for (int i = 0; i < d; ++i) {
+        for (dim_t i = 0; i < d; ++i) {
             x[i] = bound(x[i], (*x_box)[2 * i], (*x_box)[2 * i + 1]);
         }
     }
     if (v_box != NULL) {
-        for (int i = 0; i < d; ++i) {
+        for (dim_t i = 0; i < d; ++i) {
             v[i] = bound(v[i], (*v_box)[2 * i], (*v_box)[2 * i + 1]);
         }
     }

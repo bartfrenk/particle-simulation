@@ -48,6 +48,9 @@ private:
     void step(const tick_t dt);
 
     void resolve(UpdatePosition * const event);
+    void resolve(WallCollision * const event);
+
+    WallCollision *get_first_wall_collision(const size_t p_index);
 };
 
 template <const dim_t d, typename T>
@@ -59,6 +62,10 @@ Simulation<d, T>::Simulation(const size_t count, Generator<Particle<d, T>*> &fn,
     for (size_t i = 0; i < n; ++i) {
         if (!fn.empty()) ps[i] = fn.get();
         else throw std::invalid_argument("Cannot generate enough particles");
+    }
+
+    for (size_t i = 0; i < n; ++i) {
+        pending.push(get_first_wall_collision(i));
     }
 
     pending.push(new UpdatePosition(update_dt));
@@ -85,6 +92,7 @@ bool Simulation<d, T>::next() {
     case PARTICLE_COLLISION:
         break;
     case WALL_COLLISION:
+        resolve(static_cast<WallCollision*> (current));
         break;
     }
 
@@ -118,12 +126,30 @@ template <const dim_t d, typename T>
 void Simulation<d, T>::resolve(UpdatePosition * const event) {
     assert (event->time > now);
     tick_t dt = event->time - now;
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         ps[i]->move(dt);
     }
     now = event->time;
     delete event;
     pending.push(new UpdatePosition(now + update_dt));
+}
+
+template <const dim_t d, typename T>
+void Simulation<d, T>::resolve(WallCollision * const event) {
+    if (event->p_count < ps[event->p_index]->get_counter()) {
+        delete event;
+        return;
+    }
+
+    ps[event->p_index]->bounce(event->wall);
+    pending.push(get_first_wall_collision(event->p_index));
+    delete event;
+}
+
+template <const dim_t d, typename T>
+WallCollision * Simulation<d, T>::get_first_wall_collision(const size_t p_index) {
+    return new WallCollision(now + 1, 0, p_index, ps[p_index]->get_counter());
+    // TODO: to implement
 }
 
 #endif
