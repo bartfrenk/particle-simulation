@@ -14,7 +14,6 @@ struct Event {
     Event(const tick_t time) : time(time) {}
     virtual ~Event() {};
     virtual EventType get_type() const = 0;
-
 };
 
 struct UpdatePosition : Event {
@@ -29,7 +28,8 @@ struct WallCollision : Event {
     const size_t p_index;
     const unsigned int p_count;
 
-    WallCollision(const tick_t time, const dim_t wall, const size_t p_index, const unsigned int p_count)
+    WallCollision(const tick_t time, const dim_t wall, const size_t p_index,
+                  const unsigned int p_count)
         : Event(time), wall(wall), p_index(p_index), p_count(p_count) {}
 
     virtual ~WallCollision() {};
