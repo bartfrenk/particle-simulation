@@ -17,7 +17,6 @@ const double MIN = 0;
 
 double rand_double() {
     double x = (double) rand() / RAND_MAX;
-    cout << "x: " << x << "\n";
     return MIN + x * (MAX - MIN);
 }
 
@@ -31,14 +30,14 @@ void test_simulation() {
     coord_t vel_bounds[] = {-1, 1, -1, 1, -1, 1};
     fn.bound_velocity(new Box<3, coord_t>(vel_bounds));
 
-    Simulation<3, coord_t> s(3, fn, 1);
+    Simulation<3, coord_t> s(3, fn, 1, pos_bounds);
     StreamWriter<3, coord_t> observer(cout);
     s.subscribe(observer);
 
-    s.next();
-    s.notify();
-    s.next();
-    s.notify();
+    do {
+        s.notify();
+        s.next();
+    } while (std::cin.get() == '\n');
 }
 
 void test_box() {
