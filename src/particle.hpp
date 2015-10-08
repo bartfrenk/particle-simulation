@@ -27,6 +27,7 @@ public:
     void bound_position(Box<d, T> *bounds) { x_box = bounds; }
     void bound_velocity(Box<d, T> *bounds) { v_box = bounds; }
 
+
     virtual Particle<d, T>* get();
     virtual bool empty() const { return fn.empty(); }
 private:
@@ -53,6 +54,8 @@ public:
     void move(tick_t dt);
 
     unsigned int get_counter() const { return counter; }
+
+    tick_t time_to_collide(const dim_t i, const T wall);
 
     friend std::ostream& operator<< <>(std::ostream&, const Particle<d, T>&);
 
@@ -118,6 +121,12 @@ template <const dim_t d, typename T>
 void Particle<d, T>::bounce(const dim_t wall) {
     v[wall] = -v[wall];
     ++counter;
+}
+
+template <const dim_t d, typename T>
+tick_t Particle<d, T>::time_to_collide(const dim_t i, const T wall) {
+    const T edge = x[i] + (x[i] < wall ? r / 2 : -r / 2);
+    return (wall - edge) / v[i];
 }
 
 template <const dim_t d, typename T>
