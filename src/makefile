@@ -1,19 +1,26 @@
-CFLAGS = $(shell pkg-config gtkmm-3.0 --cflags)
+CC = g++
+
+INCLUDE = $(shell pkg-config gtkmm-3.0 --cflags)
 LIBS = $(shell pkg-config gtkmm-3.0 --libs)
+
 OBJECTS = client.o
+HEADERS = $(shell ls *.h)
 OPTIONS =-Wall -pedantic
 
-.PHONY: all clean
+debug: OPTIONS += -DDEBUG -g
+debug: test
+
+.PHONY: all clean test client debug
 all: client, test
 
 %.o: %.cpp
-	g++ -c $< $(OPTIONS)
+	$(CC) -c $< $(OPTIONS)
 
 client: $(OBJECTS)
-	g++ -o $@.out $^ $(OPTIONS) $(LIBS)
+	$(CC) -o $@.out $^ $(OPTIONS) $(LIBS)
 
 test: test.o utils.o
-	g++ -o $@.out $^ $(OPTIONS)
+	$(CC) -o $@.out $^ $(OPTIONS)
 
 clean:
 	rm -f *.o *.out
